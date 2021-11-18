@@ -123,4 +123,38 @@ homicide_df %>%
   select(city_state,estimate,starts_with("conf"))
 ```
 
+## Problem 2
+```{r}
+arm_file =
+  tibble(
+    files = str_c("./data/zip_data/",list.files("./data/zip_data"))
+  ) 
 
+arm_data = 
+  arm_file %>%
+  mutate(
+    subject_id = rep(c(1:10),2),
+    type = c(rep("con",10),rep("exp",10)),
+    data = purrr::map(files,read.csv)) %>%
+  unnest(data) %>%
+  select(-files) 
+
+arm_data %>% 
+  pivot_longer(
+    week_1:week_8,
+    names_to = "week",
+    values_to = "data"
+  ) %>%
+  mutate(subject_id=as.factor(subject_id)) %>%
+  mutate(category=str_c(subject_id,type)) %>%
+  group_by(type) %>%
+  ggplot(aes(x=week,y=data,group=category,color=type)) + 
+  geom_point() + 
+  geom_line(aes(linetype=type)) +
+  labs(
+    title = "Arm Data Plot",
+    x = "Week",
+    y = "Arm Data")
+```
+
+**A:** According to the plot, it's clear that the data value from experimental arm group is generally bigger than the control arm group. 
